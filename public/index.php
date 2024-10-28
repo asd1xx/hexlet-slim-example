@@ -27,12 +27,26 @@ $app->get('/users', function ($request, $response) use ($users) {
     $filteredUsers = array_filter($users, function($user) use ($term) {
         return str_contains($user, $term) === true;
     });
-    $params = ['users' => $filteredUsers];
+    $params = ['users' => $filteredUsers, 'term' => $term];
     return $this->get('renderer')->render($response, 'users/index.phtml', $params);
 });
 
+$app->get('/users/new', function ($request, $response) {
+    $params = [
+        'user' => ['nickname' => '', 'email' => '']
+    ];
+    return $this->get('renderer')->render($response, "users/new.phtml", $params);
+});
+
 $app->post('/users', function ($request, $response) {
-    return $response->withStatus(302);
+    $user = $request->getParsedBodyParam('user');
+    $file = 'users.json';
+    file_put_contents($file, json_encode($user), FILE_APPEND | LOCK_EX);
+    return $response->withRedirect('/users', 302);
+    $params = [
+        'user' => $user
+    ];
+    return $this->get('renderer')->render($response, "users/new.phtml", $params);
 });
 
 $app->get('/courses/{id}', function ($request, $response, array $args) {
