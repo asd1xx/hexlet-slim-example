@@ -6,13 +6,13 @@
   <?php foreach ($users as $user): ?>
     <tr>
       <td>
-          <?= $user['id'] ?>
+          <?= htmlspecialchars($user['id']) ?>
       </td>
       <td>
-          <?= $user['nickname'] ?>
+          <?= htmlspecialchars($user['nickname']) ?>
       </td>
       <td>
-          <?= $user['email'] ?>
+          <?= htmlspecialchars($user['email']) ?>
       </td>
     </tr>
   <?php endforeach ?>
