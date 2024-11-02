@@ -3,13 +3,20 @@
 <form action="/users" method="post">
   <div>
     <label for="nickname">Ваш nickname</label>
-    <input type="text" id="nickname" name="user[nickname]" value="<?= htmlspecialchars($user['nickname']) ?>" placeholder="asd1xx" required>
+    <input type="text" id="nickname" name="user[nickname]" value="<?= htmlspecialchars($user['nickname']) ?>" placeholder="asd1xx">
   </div>
   <div>
     <label for="email">Ваш email</label>
-    <input type="text" id="email" name="user[email]" value="<?= htmlspecialchars($user['email']) ?>" placeholder="asd1xx@mail.ru" required>
+    <input type="text" id="email" name="user[email]" value="<?= htmlspecialchars($user['email']) ?>" placeholder="asd1xx@mail.ru">
   </div>
   <div>
     <input type="submit" value="Submit" />
   </div>
+  <br>
+  <?php if (isset($errors['nickname'])): ?>
+      <div><?= $errors['nickname'] ?></div>
+  <?php endif ?>
+  <?php if (isset($errors['email'])): ?>
+      <div><?= $errors['email'] ?></div>
+  <?php endif ?>
 </form>

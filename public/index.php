@@ -26,8 +26,8 @@ $router = $app->getRouteCollector()->getRouteParser();
 
 $app->get('/', function ($request, $response) use ($router) {
     $router->urlFor('users');
-    $router->urlFor('new_users');
-    $router->urlFor('create');
+    $router->urlFor('newUsers');
+    $router->urlFor('createUser');
     $router->urlFor('course', ['id' => 1]);
     $router->urlFor('user', ['id' => 1]);
     $response->getBody()->write('Welcome to Slim!');
@@ -41,8 +41,6 @@ $app->get('/users', function ($request, $response) use ($users) {
     $filteredUsers = array_filter($users, function($user) use ($term) {
         return str_contains($user['nickname'], $term) === true;
     });
-    // $messages = $this->get('flash')->getMessages();
-    // $params = ['users' => $filteredUsers, 'term' => $term, 'flash' => $messages];
     $params = ['users' => $filteredUsers, 'term' => $term];
     return $this->get('renderer')->render($response, 'users/index.phtml', $params);
 })->setName('users');
@@ -52,28 +50,32 @@ $app->get('/users/new', function ($request, $response) {
         'user' => ['nickname' => '', 'email' => '']
     ];
     return $this->get('renderer')->render($response, "users/new.phtml");
-})->setName('new_users');
+})->setName('newUsers');
 
-$app->post('/users', function ($request, $response) {
+$app->post('/users', function ($request, $response) use ($router) {
     $dataRequest = $request->getParsedBodyParam('user');
+    $validator = new App\Validator();
+    $errors = $validator->validate($dataRequest);
     $id = ['id' => uniqid('user')];
     $user[] = array_merge($id, $dataRequest);
+    $url = $router->urlFor('users');
 
-    if (!file_exists(USER_LIST) || filesize(USER_LIST) === 0) {
-        file_put_contents(USER_LIST, json_encode($user));
-    } else {
-        $dataFile = json_decode(file_get_contents(USER_LIST), true);
-        $dataResult = array_merge($dataFile, $user);
-        file_put_contents(USER_LIST, json_encode($dataResult));
+    if (count($errors) === 0) {
+        if (!file_exists(USER_LIST) || filesize(USER_LIST) === 0) {
+            file_put_contents(USER_LIST, json_encode($user));
+            return $response->withRedirect($url);
+        } else {
+            $dataFile = json_decode(file_get_contents(USER_LIST), true);
+            $dataResult = array_merge($dataFile, $user);
+            file_put_contents(USER_LIST, json_encode($dataResult));
+            return $response->withRedirect($url);
+        }
     }
 
-    // $this->get('flash')->addMessage('success', 'OK');
-    // return $response->withRedirect('/users');
-    $params = [
-        'user' => $user
-    ];
-    return $this->get('renderer')->render($response->withRedirect('/users'), "users/new.phtml", $params);
-})->setName('create');
+    $params = ['user' => $user, 'errors' => $errors];
+    $response = $response->withStatus(422);
+    return $this->get('renderer')->render($response, "users/new.phtml", $params);
+})->setName('createUser');
 
 $app->get('/courses/{id}', function ($request, $response, array $args) {
     $id = $args['id'];
@@ -92,7 +94,7 @@ $app->get('/users/{id}', function ($request, $response, array $args) use ($users
             return $this->get('renderer')->render($response, 'users/show.phtml', $params);
         }
     }
-    
+
     return $response->withStatus(404);
 })->setName('user');
 
