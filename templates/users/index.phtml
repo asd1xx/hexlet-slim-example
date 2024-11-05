@@ -1,5 +1,7 @@
+<a href="/users/new">CREATE USER</a>
+<h3>USER LIST</h3>
 <form action="/users" method="get">
-  <input type="search" name="term" value="<?= htmlspecialchars($term) ?>" required>
+  <input type="search" name="term" value="<?= htmlspecialchars($term) ?>">
   <input type="submit" value="Search">
 </form>
 <table>
@@ -9,7 +11,7 @@
           <?= htmlspecialchars($user['id']) ?>
       </td>
       <td>
-          <?= htmlspecialchars($user['nickname']) ?>
+          <a href="users/<?= htmlspecialchars($user['id']) ?>/edit"><?= htmlspecialchars($user['nickname']) ?></a>
       </td>
       <td>
           <?= htmlspecialchars($user['email']) ?>
@@ -17,3 +19,4 @@
     </tr>
   <?php endforeach ?>
 </table>
+

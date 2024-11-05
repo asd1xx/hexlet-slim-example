@@ -5,11 +5,9 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Slim\Factory\AppFactory;
 use DI\Container;
+use Slim\Middleware\MethodOverrideMiddleware;
 
 const USER_LIST = 'users.json';
-
-$data = file_get_contents(USER_LIST);
-$users = json_decode($data, true);
 
 $container = new Container();
 $container->set('renderer', function () {
@@ -22,15 +20,15 @@ $container->set('flash', function () {
 
 $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
+$app->add(MethodOverrideMiddleware::class);
 $router = $app->getRouteCollector()->getRouteParser();
 
+$data = file_get_contents(USER_LIST);
+$users = json_decode($data, true);
+
 $app->get('/', function ($request, $response) use ($router) {
-    $router->urlFor('users');
-    $router->urlFor('newUsers');
-    $router->urlFor('createUser');
-    $router->urlFor('course', ['id' => 1]);
-    $router->urlFor('user', ['id' => 1]);
     $response->getBody()->write('Welcome to Slim!');
+
     return $response;
     // Благодаря пакету slim/http этот же код можно записать короче
     // return $response->write('Welcome to Slim!');
@@ -42,15 +40,15 @@ $app->get('/users', function ($request, $response) use ($users) {
         return str_contains($user['nickname'], $term) === true;
     });
     $params = ['users' => $filteredUsers, 'term' => $term];
+
     return $this->get('renderer')->render($response, 'users/index.phtml', $params);
 })->setName('users');
 
 $app->get('/users/new', function ($request, $response) {
-    $params = [
-        'user' => ['nickname' => '', 'email' => '']
-    ];
+    $params = ['user' => ['nickname' => '', 'email' => ''], 'errors' => []];
+    
     return $this->get('renderer')->render($response, "users/new.phtml");
-})->setName('newUsers');
+});
 
 $app->post('/users', function ($request, $response) use ($router) {
     $dataRequest = $request->getParsedBodyParam('user');
@@ -77,25 +75,45 @@ $app->post('/users', function ($request, $response) use ($router) {
     return $this->get('renderer')->render($response, "users/new.phtml", $params);
 })->setName('createUser');
 
-$app->get('/courses/{id}', function ($request, $response, array $args) {
-    $id = $args['id'];
-    return $response->write("Course id: {$id}");
-})->setName('course');
+// $app->get('/courses/{id}', function ($request, $response, array $args) {
+//     $id = $args['id'];
+//     return $response->write("Course id: {$id}");
+// })->setName('course');
 
-$app->get('/users/{id}', function ($request, $response, array $args) use ($users) {
+$app->get('/users/{id}/edit', function ($request, $response, array $args) use ($users) {
     $id = $args['id'];
 
     foreach ($users as $user) {
         if ($user['id'] === $id) {
-            $params = ['id' => $args['id'], 'nickname' => $user['nickname'], 'email' => $user['email']];
+            $params = ['userData' => $user, 'user' => $user, 'errors' => []];
             // Указанный путь считается относительно базовой директории для шаблонов, заданной на этапе конфигурации
             // $this доступен внутри анонимной функции благодаря https://php.net/manual/ru/closure.bindto.php
             // $this в Slim это контейнер зависимостей
-            return $this->get('renderer')->render($response, 'users/show.phtml', $params);
+            return $this->get('renderer')->render($response, 'users/edit.phtml', $params);
         }
     }
 
     return $response->withStatus(404);
 })->setName('user');
+
+$app->patch('/users/{id}', function ($request, $response, array $args) use ($router, $users) {
+    $id = $args['id'];
+    $dataRequest = $request->getParsedBodyParam('user');
+    $validator = new App\Validator();
+    $errors = $validator->validate($dataRequest);
+    $url = $router->urlFor('users');
+    
+    foreach ($users as &$user) {
+        if (count($errors) === 0 && $user['id'] === $id) {
+            $user['nickname'] = $dataRequest['nickname'];
+            $user['email'] = $dataRequest['email'];
+            file_put_contents(USER_LIST, json_encode($users));
+            return $response->withRedirect($url);
+        }
+    }
+    
+    $params = ['user' => $user, 'errors' => $errors];
+    return $this->get('renderer')->render($response->withStatus(422), 'users/edit.phtml', $params);
+})->setName('editUser');
 
 $app->run();
