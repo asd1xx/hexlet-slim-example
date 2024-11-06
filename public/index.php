@@ -10,6 +10,8 @@ use Slim\Middleware\MethodOverrideMiddleware;
 const USER_LIST = 'users.json';
 const COUNT_OF_ELEMENTS = 1;
 
+session_start();
+
 $container = new Container();
 $container->set('renderer', function () {
     // Параметром передается базовая директория, в которой будут храниться шаблоны
@@ -40,7 +42,8 @@ $app->get('/users', function ($request, $response) use ($users) {
     $filteredUsers = array_filter($users, function($user) use ($term) {
         return str_contains($user['nickname'], $term) === true;
     });
-    $params = ['users' => $filteredUsers, 'term' => $term];
+    $flash = $this->get('flash')->getMessages();
+    $params = ['users' => $filteredUsers, 'term' => $term, 'flash' => $flash];
 
     return $this->get('renderer')->render($response, 'users/index.phtml', $params);
 })->setName('users');
@@ -62,11 +65,13 @@ $app->post('/users', function ($request, $response) use ($router) {
     if (count($errors) === 0) {
         if (!file_exists(USER_LIST) || filesize(USER_LIST) === 0) {
             file_put_contents(USER_LIST, json_encode($user));
+            $this->get('flash')->addMessage('success', 'User created successfully!');
             return $response->withRedirect($url);
         } else {
             $dataFile = json_decode(file_get_contents(USER_LIST), true);
             $dataResult = array_merge($dataFile, $user);
             file_put_contents(USER_LIST, json_encode($dataResult));
+            $this->get('flash')->addMessage('success', 'User created successfully!');
             return $response->withRedirect($url);
         }
     }
@@ -105,6 +110,7 @@ $app->patch('/users/{id}', function ($request, $response, array $args) use ($rou
             $user['nickname'] = $dataRequest['nickname'];
             $user['email'] = $dataRequest['email'];
             file_put_contents(USER_LIST, json_encode($users));
+            $this->get('flash')->addMessage('success', 'User updated successfully!');
             return $response->withRedirect($url);
         }
     }
@@ -124,6 +130,7 @@ $app->delete('/users/{id}', function ($request, $response, array $args) use ($ro
             $key = array_search($user, $users);
             array_splice($users, $key, COUNT_OF_ELEMENTS);
             file_put_contents(USER_LIST, json_encode($users));
+            $this->get('flash')->addMessage('success', 'User deleted successfully!');
             return $response->withRedirect($url);
         }
     }
