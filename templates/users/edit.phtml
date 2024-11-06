@@ -5,3 +5,8 @@
   <?php require '_form.phtml' ?>
   <input type="submit" value="UPDATE">
 </form>
+
+<form action="/users/<?= $user['id'] ?>" method="post">
+  <input type="hidden" name="_METHOD" value="DELETE">
+  <input type="submit" value="DELETE">
+</form>

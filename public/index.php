@@ -8,6 +8,7 @@ use DI\Container;
 use Slim\Middleware\MethodOverrideMiddleware;
 
 const USER_LIST = 'users.json';
+const COUNT_OF_ELEMENTS = 1;
 
 $container = new Container();
 $container->set('renderer', function () {
@@ -26,7 +27,7 @@ $router = $app->getRouteCollector()->getRouteParser();
 $data = file_get_contents(USER_LIST);
 $users = json_decode($data, true);
 
-$app->get('/', function ($request, $response) use ($router) {
+$app->get('/', function ($request, $response) {
     $response->getBody()->write('Welcome to Slim!');
 
     return $response;
@@ -46,7 +47,7 @@ $app->get('/users', function ($request, $response) use ($users) {
 
 $app->get('/users/new', function ($request, $response) {
     $params = ['user' => ['nickname' => '', 'email' => ''], 'errors' => []];
-    
+
     return $this->get('renderer')->render($response, "users/new.phtml");
 });
 
@@ -72,13 +73,9 @@ $app->post('/users', function ($request, $response) use ($router) {
 
     $params = ['user' => $user, 'errors' => $errors];
     $response = $response->withStatus(422);
-    return $this->get('renderer')->render($response, "users/new.phtml", $params);
-})->setName('createUser');
 
-// $app->get('/courses/{id}', function ($request, $response, array $args) {
-//     $id = $args['id'];
-//     return $response->write("Course id: {$id}");
-// })->setName('course');
+    return $this->get('renderer')->render($response, "users/new.phtml", $params);
+});
 
 $app->get('/users/{id}/edit', function ($request, $response, array $args) use ($users) {
     $id = $args['id'];
@@ -94,7 +91,7 @@ $app->get('/users/{id}/edit', function ($request, $response, array $args) use ($
     }
 
     return $response->withStatus(404);
-})->setName('user');
+});
 
 $app->patch('/users/{id}', function ($request, $response, array $args) use ($router, $users) {
     $id = $args['id'];
@@ -102,7 +99,7 @@ $app->patch('/users/{id}', function ($request, $response, array $args) use ($rou
     $validator = new App\Validator();
     $errors = $validator->validate($dataRequest);
     $url = $router->urlFor('users');
-    
+
     foreach ($users as &$user) {
         if (count($errors) === 0 && $user['id'] === $id) {
             $user['nickname'] = $dataRequest['nickname'];
@@ -111,9 +108,32 @@ $app->patch('/users/{id}', function ($request, $response, array $args) use ($rou
             return $response->withRedirect($url);
         }
     }
-    
+
     $params = ['user' => $user, 'errors' => $errors];
+
     return $this->get('renderer')->render($response->withStatus(422), 'users/edit.phtml', $params);
 })->setName('editUser');
+
+$app->delete('/users/{id}', function ($request, $response, array $args) use ($router, $users) {
+    $id = $args['id'];
+    $url = $router->urlFor('users');
+    $index = array_search($id, array_column($users, 'id'));
+
+    foreach ($users as $user) {
+        if ($user['id'] === $id) {
+            $key = array_search($user, $users);
+            array_splice($users, $key, COUNT_OF_ELEMENTS);
+            file_put_contents(USER_LIST, json_encode($users));
+            return $response->withRedirect($url);
+        }
+    }
+
+    return $response->withStatus(422);
+});
+
+// $app->get('/courses/{id}', function ($request, $response, array $args) {
+//     $id = $args['id'];
+//     return $response->write("Course id: {$id}");
+// })->setName('course');
 
 $app->run();
