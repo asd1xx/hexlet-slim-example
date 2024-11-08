@@ -32,7 +32,7 @@ $users = json_decode($data, true);
 $app->get('/', function ($request, $response) {
     $response->getBody()->write('Welcome to Slim!');
 
-    return $response;
+    return $this->get('renderer')->render($response, 'users/home.phtml');
     // Благодаря пакету slim/http этот же код можно записать короче
     // return $response->write('Welcome to Slim!');
 });
