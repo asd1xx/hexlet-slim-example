@@ -48,3 +48,9 @@ Perform the following steps in sequence:
     ```bash
     make start
     ```
+
+5. Open in browser:
+    
+    ```bash
+    http://localhost:8000
+    ```
