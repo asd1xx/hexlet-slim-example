@@ -138,6 +138,7 @@ $app->delete('/users/{id}', function ($request, $response, array $args) use ($ro
     return $response->withStatus(422);
 });
 
+// Код ниже был написан в рамках обучения и не используется в приложении
 // $app->get('/courses/{id}', function ($request, $response, array $args) {
 //     $id = $args['id'];
 //     return $response->write("Course id: {$id}");
