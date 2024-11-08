@@ -38,7 +38,7 @@ $app->get('/', function ($request, $response) {
 });
 
 $app->get('/users', function ($request, $response) use ($users) {
-    $term = $request->getQueryParam('term');
+    $term = $request->getQueryParam('term') ?? '';
     $filteredUsers = array_filter($users, function($user) use ($term) {
         return str_contains($user['nickname'], $term) === true;
     });
