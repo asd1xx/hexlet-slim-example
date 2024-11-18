@@ -1,31 +1,33 @@
-<?php if (count($flash) > 0): ?>
-  <?php foreach ($flash as $messages): ?>
-      <?php foreach ($messages as $message): ?>
-          <p style="color: red"><?= $message ?></p>
-      <?php endforeach ?>
-  <?php endforeach ?>
-<?php endif ?>
+<!DOCTYPE html>
+<html>
+  <?php if (count($flash) > 0): ?>
+    <?php foreach ($flash as $messages): ?>
+        <?php foreach ($messages as $message): ?>
+            <p style="color: red"><?= $message ?></p>
+        <?php endforeach ?>
+    <?php endforeach ?>
+  <?php endif ?>
 
-<a href="/users/new">CREATE USER</a>
-<h3>USER LIST</h3>
-<form action="/users" method="get">
-  <input type="search" name="term" value="<?= htmlspecialchars($term) ?>">
-  <input type="submit" value="Search">
-</form>
-<table>
-  <th>id</th><th>nickname</th><th>email</th>
-  <?php foreach ($users as $user): ?>
-    <tr>
-      <td>
-          <?= htmlspecialchars($user['id']) ?>
-      </td>
-      <td>
-          <a href="users/<?= htmlspecialchars($user['id']) ?>/edit"><?= htmlspecialchars($user['nickname']) ?></a>
-      </td>
-      <td>
-          <?= htmlspecialchars($user['email']) ?>
-      </td>
-    </tr>
-  <?php endforeach ?>
-</table>
-
+  <a href="/users/new">CREATE USER</a>
+  <h3>USER LIST</h3>
+  <form action="/users" method="get">
+    <input type="search" name="term" value="<?= htmlspecialchars($term) ?>">
+    <input type="submit" value="Search">
+  </form>
+  <table>
+    <th>id</th><th>nickname</th><th>email</th>
+    <?php foreach ($users as $user): ?>
+      <tr>
+        <td>
+            <?= htmlspecialchars($user['id']) ?>
+        </td>
+        <td>
+            <a href="users/<?= htmlspecialchars($user['id']) ?>/edit"><?= htmlspecialchars($user['nickname']) ?></a>
+        </td>
+        <td>
+            <?= htmlspecialchars($user['email']) ?>
+        </td>
+      </tr>
+    <?php endforeach ?>
+  </table>
+</html>

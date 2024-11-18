@@ -1,12 +1,15 @@
-<a href="/users">BACK TO USER LIST</a>
-<h3>EDIT USER</h3>
-<form action="/users/<?= htmlspecialchars($userData['id']) ?>" method="post">
-  <input type="hidden" name="_METHOD" value="PATCH">
-  <?php require '_form.phtml' ?>
-  <input type="submit" value="UPDATE">
-</form>
+<!DOCTYPE html>
+<html>
+  <a href="/users">BACK TO USER LIST</a>
+  <h3>EDIT USER</h3>
+  <form action="/users/<?= htmlspecialchars($userData['id']) ?>" method="post">
+    <input type="hidden" name="_METHOD" value="PATCH">
+    <?php require '_form.phtml' ?>
+    <input type="submit" value="UPDATE">
+  </form>
 
-<form action="/users/<?= $user['id'] ?>" method="post">
-  <input type="hidden" name="_METHOD" value="DELETE">
-  <input type="submit" value="DELETE">
-</form>
+  <form action="/users/<?= $user['id'] ?>" method="post">
+    <input type="hidden" name="_METHOD" value="DELETE">
+    <input type="submit" value="DELETE">
+  </form>
+</html>
