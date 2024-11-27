@@ -54,3 +54,15 @@ Perform the following steps in sequence:
     ```bash
     http://localhost:8000
     ```
+
+## Information about routes and methods
+
+| Method | Route            | Info                             |
+|--------|------------------|----------------------------------|
+| GET    | /                | main page                        |
+| GET    | /users           | getting a list of all users      |
+| GET    | /users/new       | output of the user сreation form |
+| GET    | /users/{id}/edit | output of the user edit form     |
+| POST   | /users           | creating a user                  |
+| PATCH  | /users/{id}      | user update                      |
+| DELETE | /users/{id}      | deleting a user                  |
